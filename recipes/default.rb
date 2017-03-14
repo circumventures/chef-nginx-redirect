@@ -14,4 +14,12 @@ node['nginx-redirect'][:redirections].each do |redirection|
                private_key: private_key})
     notifies :restart, resources(:service => 'nginx')
   end
+
+  execute "nxensite #{redirection[:host]}" do
+    command "/usr/sbin/nxensite #{redirection[:host]}"
+    notifies :restart, resources(:service => "nginx")
+    only_if { File.exists?("#{node[:nginx][:dir]}/sites-available/#{redirection[:host]}") }
+    not_if { File.symlink?("#{node[:nginx][:dir]}/sites-enabled/#{redirection[:host]}") }
+  end
+
 end
